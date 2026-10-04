@@ -43,11 +43,15 @@ export default function NotesClient() {
           }} />
         </div>
 
-        <Pagination 
-          pageCount={totalPages} 
-          onPageChange={(selectedPage: number) => setPage(selectedPage)} 
-          forcePage={totalPages > 0 ? page - 1 : 0} 
-        />
+        {totalPages > 1 && (
+          <Pagination 
+            pageCount={totalPages} 
+            onPageChange={(selectedPage: number) => {
+              setPage(selectedPage);
+            }} 
+            forcePage={page} 
+          />
+        )}
 
         <button 
           type="button"

@@ -8,7 +8,9 @@ interface IModalProps {
   children: ReactNode;
 }
 
-const modalRoot = document.querySelector('#modal-root') || document.body;
+const modalRoot = typeof document !== 'undefined' 
+  ? (document.querySelector('#modal-root') || document.body) 
+  : null;
 
 const Modal: React.FC<IModalProps> = ({ onClose, children }) => {
   
@@ -33,6 +35,7 @@ const Modal: React.FC<IModalProps> = ({ onClose, children }) => {
     if (e.currentTarget === e.target) onClose();
   };
 
+  if (!modalRoot) return null;
   return createPortal(
     <div className={css.backdrop} role="dialog" aria-modal="true" onClick={handleBackdropClick}>
       <div className={css.modal}>{children}</div>

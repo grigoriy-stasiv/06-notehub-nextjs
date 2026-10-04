@@ -2,8 +2,8 @@ import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createNote } from '../../services/noteService';
-import type { CreateNoteInput, NoteTag } from '../../types/note';
+import { createNote } from '@/lib/api';
+import type { CreateNoteInput, NoteTag } from '@/types/note';
 import css from './NoteForm.module.css';
 
 interface INoteFormProps {
@@ -35,18 +35,24 @@ export const NoteForm: React.FC<INoteFormProps> = ({ onCancel }) => {
     mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      onCancel();
+      onCancel(); 
     },
-    onError: (error) => {
-      console.error('Error creating note:', error);
+    onError: (error: unknown) => {
+      console.error('Error creating note globally:', error);
     },
   });
 
   const handleSubmit = (values: CreateNoteInput, { resetForm }: { resetForm: () => void }) => {
+    console.log('Дані, що надсилаються на сервер:', values);
+
     mutate(values, {
       onSuccess: () => {
         resetForm();
       },
+      onError: (error: unknown) => {
+        const err = error as { response?: { data?: unknown }; message?: string };
+        console.error('Помилка сервера при створенні нотатки:', err.response?.data || err.message);
+      }
     });
   };
 

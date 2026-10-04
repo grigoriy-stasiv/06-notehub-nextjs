@@ -14,6 +14,7 @@ export default function NoteDetailsClient({ id }: Props) {
   const { data: note, error, isLoading } = useQuery({
     queryKey: ['note', id],
     queryFn: () => fetchNoteById(id),
+    refetchOnMount: false,
   });
 
   if (isLoading) return <p style={{ padding: '20px' }}>Loading note details...</p>;

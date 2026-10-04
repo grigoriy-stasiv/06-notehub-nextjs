@@ -1,24 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useDebounce } from 'use-debounce';
 import { fetchNotes } from '@/lib/api';
 import SearchBox from '@/components/SearchBox/SearchBox';
 import NoteList from '@/components/NoteList/NoteList';
 import { Pagination } from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
 import { NoteForm } from '@/components/NoteForm/NoteForm';
- import css from './page.module.css';
+import css from './page.module.css';
 
 export default function NotesClient() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const perPage = 8; 
+  const perPage = 8;
+
+  const [debouncedSearch] = useDebounce(search, 500);
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ['notes', { page, perPage, search }],
-    queryFn: () => fetchNotes({ page, perPage, search }),
+    queryKey: ['notes', { page, perPage, search: debouncedSearch }],
+    queryFn: () => fetchNotes({ page, perPage, search: debouncedSearch }),
+    placeholderData: keepPreviousData, 
   });
 
   if (error) return <p className={css.error || ''}>Сталася помилка при завантаженні нотаток.</p>;
@@ -27,31 +31,31 @@ export default function NotesClient() {
   const totalPages = data?.totalPages || 1;
 
   return (
-    
     <div className={css.container || css.notesPage || ''}>
       
       {}
-      <div className={css.toolbar || css.header || ''} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', gap: '20px' }}>
-        <SearchBox onChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', gap: '20px', width: '100%' }}>
+        <div style={{ width: '300px' }}>
+          {}
+          <SearchBox onChange={(value) => {
+            setSearch(value);
+            setPage(1); 
+          }} />
+        </div>
 
         <Pagination 
-  pageCount={totalPages} 
-  onPageChange={(pageNumber: number) => {
-    setPage(pageNumber);
-  }} 
-  forcePage={page} 
-/>
+          pageCount={totalPages} 
+          onPageChange={(selectedPage: number) => setPage(selectedPage)} 
+          forcePage={totalPages > 0 ? page - 1 : 0} 
+        />
 
-<button 
-  type="button"
-  onClick={() => setIsModalOpen(true)}
-  className={css.button}
->
-  Create note +
-</button>
+        <button 
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          className={css.button || css.createButton || ''}
+        >
+          Create note +
+        </button>
       </div>
 
       {}
